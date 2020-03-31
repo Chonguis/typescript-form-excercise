@@ -1,17 +1,36 @@
 import React, { Component, ChangeEvent } from 'react';
+import './FormContainer.css';
+
+const cars = [
+  {year:2020, make:'Acura', model:'TLX'},
+  {year:2020, make:'Acura', model:'RDX'},
+  {year:2020, make:'Toyota', model:'Yaris'},
+  {year:2020, make:'Toyota', model:'Corolla'},
+  {year:2019, make:'Toyota', model:'Camry'},
+  {year:2019, make:'BMW', model:'2 SERIES'},
+  {year:2019, make:'BMW', model:'3 SERIES'},
+];
+const inputValues = [
+  {id: 'firstName', label: 'First Name', type: 'text'},
+  {id: 'lastName', label: 'Last Name', type: 'text'},
+  {id: 'phone', label: 'Phone' , type: 'phonenumber'},
+  {id: 'year', label: 'Year' , type: 'number'},
+  {id: 'make', label: 'Make'},
+  {id: 'model', label: 'Model'},
+  {id: 'color', label: 'Color', type: 'text'},
+  {id: 'plate', label: 'Plate', type: 'number'},      
+];
 
 interface State {
-  cars: {year: number; make: string; model: string}[],
-  inputValues: {id: string; label: string, type?: string}[],
-  
-  firstName: string | null,
-  lastName: string | null,
-  phone: string | null,
-  year: string | null,
-  make: string | null,
-  model: string | null,
-  color: string | null,
-  plate: string | null,
+  firstName: string;
+  lastName: string;
+  phone: string;
+  year: string;
+  make: string,
+  model: string,
+  color: string,
+  plate: string,
+  [key: string]: string,
 }
 
 const selectors: string[] = ['make', 'model', 'year'];
@@ -21,25 +40,6 @@ class Form extends Component<{}, State> {
     super(props);
 
     this.state = {
-      cars: [
-        {year:2020, make:'Acura', model:'TLX'},
-        {year:2020, make:'Acura', model:'RDX'},
-        {year:2020, make:'Toyota', model:'Yaris'},
-        {year:2020, make:'Toyota', model:'Corolla'},
-        {year:2019, make:'Toyota', model:'Camry'},
-        {year:2019, make:'BMW', model:'2 SERIES'},
-        {year:2019, make:'BMW', model:'3 SERIES'},
-      ],
-      inputValues: [
-        {id: 'firstName', label: 'First Name', type: 'text'},
-        {id: 'lastName', label: 'Last Name', type: 'text'},
-        {id: 'phone', label: 'Phone' , type: 'phonenumber'},
-        {id: 'year', label: 'Year' , type: 'number'},
-        {id: 'make', label: 'Make'},
-        {id: 'model', label: 'Model'},
-        {id: 'color', label: 'Color', type: 'text'},
-        {id: 'plate', label: 'Plate', type: 'number'},      
-      ],
       firstName: '',
       lastName: '',
       phone: '',
@@ -52,8 +52,6 @@ class Form extends Component<{}, State> {
   }
 
   onChangeHandler = (event: ChangeEvent<HTMLInputElement>, id: string):void => {
-    console.log(event.target.value, id, typeof event.target.value, typeof id);
-    let stateObj = this.state;
     this.setState({
       ...this.state,
       [id]: event.target.value,
@@ -64,14 +62,15 @@ class Form extends Component<{}, State> {
 
     let inputs: JSX.Element[] = [];
     
-    let inputHTML = this.state.inputValues.map(inputValue => {
+    let inputHTML = inputValues.map(inputValue => {
+      console.log(inputValue.id);
       !selectors.includes(inputValue.id) ? 
         inputs.push(
           <div>
               <label htmlFor={inputValue.id}>{inputValue.label}</label>
-              {/* <span>{...this.state[inputValue.id]}</span> */}
               <br />
-              <input type={inputValue.type} id={inputValue.id} onChange={(e) => this.onChangeHandler(e, inputValue.id)} /><br /><br />
+              <input type={inputValue.type} id={inputValue.id} onChange={(e) => this.onChangeHandler(e, inputValue.id)} /><span>{this.state[inputValue.id]}</span>
+              <br /><br />
           </div>
         ) : 
         inputs.push(
@@ -85,7 +84,7 @@ class Form extends Component<{}, State> {
     console.log('inputArray', inputs);
 
       return (
-          <div>
+          <div className="container">
               <p>Hello</p>
 
               {inputs}
