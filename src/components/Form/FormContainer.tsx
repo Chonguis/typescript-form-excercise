@@ -1,7 +1,5 @@
 import React, { Component, ChangeEvent } from 'react';
 import './FormContainer.css';
-import { JSXElement } from '@babel/types';
-import { Options } from 'stack-utils';
 
 const cars = [
   {year:"2020", make:'Acura', model:'TLX'},
@@ -12,7 +10,21 @@ const cars = [
   {year:"2019", make:'BMW', model:'2 SERIES'},
   {year:"2019", make:'BMW', model:'3 SERIES'},
 ];
-const inputValues = [
+const carsCascading: {
+  [key: string]: {
+    [key: string]: string[];
+  };
+} = {
+  "2020": {
+    "Acura": ["TLX", "RDX"],
+    "Toyota": ["Yaris", "Corolla"],
+  },
+  "2019": {
+    "BMW": ["2 SERIES", "3 SERIES"],
+    "Toyota": ["Camry"],
+  },
+};
+const inputsData = [
   {id: 'firstName', label: 'First Name', type: 'text'},
   {id: 'lastName', label: 'Last Name', type: 'text'},
   {id: 'phone', label: 'Phone' , type: 'phonenumber'},
@@ -35,7 +47,7 @@ interface State {
   [key: string]: string,
 }
 
-const selectors: string[] = ['make', 'model', 'year'];
+const selects: string[] = ['make', 'model', 'year'];
 
 class Form extends Component<{}, State> {
   constructor(props: any){
@@ -61,83 +73,72 @@ class Form extends Component<{}, State> {
   }
 
   onChangeSelect = (event: ChangeEvent<HTMLSelectElement>, id: string):void => {
-    this.setState({
-      ...this.state,
-      [id]: event.target.value,
-    });
+    if (id == "year") {
+      this.setState({
+        ...this.state,
+        [id]: event.target.value,
+        make: carsCascading[event.target.value][this.state.make] ? this.state.make : Object.keys(carsCascading[event.target.value])[0],
+      });
+    } else {
+      this.setState({
+        ...this.state,
+        [id]: event.target.value,
+      });
+    }
   }
 
   getOptions = (id: string): JSX.Element[] | undefined => {
-    if (id == "year"){
-      let years: string[] = [];
-      cars.map(car => {
-        !years.includes(car.year) && years.push(car.year);
-      }) 
-      let options: JSX.Element[] = [<option value=''></option>];
-      years.map(year => {
-        options.push(<option value={year}>{year}</option>)
-      })
+    let options: JSX.Element[] = [];
+    if (id === "year"){
+      options.push(<option disabled value=''></option>);
+      let years: string[] = Object.keys(carsCascading);
+      years.map((year, i) => options.push(<option key={i} value={year}>{year}</option>));
       if (options) return options;
     }
-    if (id == "make") {
-      let makers: string[] = [];
-      cars.map(car => {
-        console.log(this.state.year, car.year, '');
-        this.state.year == car.year && !makers.includes(car.make) && makers.push(car.make);  
-      })
-      let options: JSX.Element[] = [];
-      makers.map(make => {
-        options.push(<option value={make}>{make}</option>)
-      })
-      console.log(options);
+    if (id === "make" && this.state.year) {
+      let makers: string[] = Object.keys(carsCascading[this.state.year]);
+      makers.map((make, i) => options.push(<option key={i} value={make}>{make}</option>));
       if (options) return options;
     }
-    if (id == "model") {
-      let models: string[] = [];
-      cars.map(car => {
-        this.state.make == car.make && this.state.year == car.year && models.push(car.model);
-      })
-      let options: JSX.Element[] = [];
-      models.map(model => {
-        options.push(<option value={model}>{model}</option>)
-      })
-      console.log(options);
+    if (id === "model" && this.state.make) {
+      let models: string[] = carsCascading[this.state.year][this.state.make];
+      models.map((model, i) => options.push(<option key={i} value={model}>{model}</option>));
       if (options) return options;
     }
   }
 
   render() {
 
-    let inputs: JSX.Element[] = [];
+    let inputsHTML: JSX.Element[] = [];
     
-    let inputHTML = inputValues.map(inputValue => {
-      console.log(inputValue.id);
-      if(!selectors.includes(inputValue.id)) {
-        inputs.push(
+    inputsData.forEach(data => {
+      if(!selects.includes(data.id)) {
+        inputsHTML.push(
           <div>
-              <label htmlFor={inputValue.id}>{inputValue.label}</label>
-              <br />
-              <input type={inputValue.type} id={inputValue.id} onChange={(e) => this.onChangeInput(e, inputValue.id)} /><span>{this.state[inputValue.id]}</span>
-              <br /><br />
+            <label htmlFor={data.id}>{data.label}</label>
+            <br />
+            <input type={data.type} id={data.id} onChange={(e) => this.onChangeInput(e, data.id)} />
+            <span>{this.state[data.id]}</span>
+            <br /><br />
           </div>
         )
       } else {
-        inputs.push(
+        inputsHTML.push(
           <div>
-            <label htmlFor={inputValue.id}>{inputValue.label}</label><br />
-            <select id={inputValue.id} onChange={(e) => this.onChangeSelect(e, inputValue.id)} >
-              {this.getOptions(inputValue.id)}
+            <label htmlFor={data.id}>{data.label}</label>
+            <br />
+            <select id={data.id} onChange={(e) => this.onChangeSelect(e, data.id)} value={this.state[data.id]}>
+              {this.getOptions(data.id)}
             </select>
           </div>)
       }
       })
-    console.log('inputArray', inputs);
 
       return (
           <div className="container">
               <p>Hello</p>
 
-              {inputs}
+              {inputsHTML}
           </div>
       );
   }
