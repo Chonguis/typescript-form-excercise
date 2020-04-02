@@ -1,4 +1,4 @@
-import React, { Component, ChangeEvent } from 'react';
+import React, { Component, ChangeEvent, FormEvent } from 'react';
 import './FormContainer.css';
 
 const cars = [
@@ -40,16 +40,20 @@ interface State {
   lastName: string;
   phone: string;
   year: string;
-  make: string,
-  model: string,
-  color: string,
-  plate: string,
-  [key: string]: string,
+  make: string;
+  model: string;
+  color: string;
+  plate: string;
+  [key: string]: string;
+}
+
+interface Props {
+  onSubmitForm: (e: FormEvent<HTMLFormElement>, filterState: {}) => void;
 }
 
 const selects: string[] = ['make', 'model', 'year'];
 
-class Form extends Component<{}, State> {
+class Form extends Component<Props, State> {
   constructor(props: any){
     super(props);
 
@@ -73,37 +77,54 @@ class Form extends Component<{}, State> {
   }
 
   onChangeSelect = (event: ChangeEvent<HTMLSelectElement>, id: string):void => {
-    if (id == "year") {
-      this.setState({
-        ...this.state,
-        [id]: event.target.value,
-        make: carsCascading[event.target.value][this.state.make] ? this.state.make : Object.keys(carsCascading[event.target.value])[0],
-      });
-    } else {
-      this.setState({
-        ...this.state,
-        [id]: event.target.value,
-      });
+    if (event.target.value) {
+      if (id == "year") {
+        this.setState({
+          ...this.state,
+          [id]: event.target.value,
+          make: "",
+        });
+      } else {
+        this.setState({
+          ...this.state,
+          [id]: event.target.value,
+        });
+      }
     }
   }
 
   getOptions = (id: string): JSX.Element[] | undefined => {
-    let options: JSX.Element[] = [];
     if (id === "year"){
-      options.push(<option disabled value=''></option>);
+      let options: JSX.Element[] = [<option value="" disabled>Year</option>];
       let years: string[] = Object.keys(carsCascading);
-      years.map((year, i) => options.push(<option key={i} value={year}>{year}</option>));
+      years.map((year, i) => options.push(<option key={i + 1} value={year}>{year}</option>));
+      options.push(<option value="other">Other</option>);
       if (options) return options;
     }
-    if (id === "make" && this.state.year) {
-      let makers: string[] = Object.keys(carsCascading[this.state.year]);
-      makers.map((make, i) => options.push(<option key={i} value={make}>{make}</option>));
-      if (options) return options;
+    if (id === "make") {
+      if (this.state.year && this.state.year !== "other") {
+        let options: JSX.Element[] = [<option value="">Make</option>];
+        let makers: string[] = Object.keys(carsCascading[this.state.year]);
+        makers.map((make, i) => options.push(<option key={i + 1} value={make}>{make}</option>));
+        options.push(<option value="other">Other</option>);
+        if (options) return options;
+      } else {
+        let options: JSX.Element[] = [<option value="" disabled>Make</option>];
+        if (options) return options;
+      }
     }
-    if (id === "model" && this.state.make) {
-      let models: string[] = carsCascading[this.state.year][this.state.make];
-      models.map((model, i) => options.push(<option key={i} value={model}>{model}</option>));
-      if (options) return options;
+    if (id === "model") {
+      if (this.state.make && this.state.make !== "other" && this.state.year && this.state.year !== "other"){
+        let options: JSX.Element[] = [<option value="">Model</option>];
+        console.log(this.state.year, this.state.make);
+        let models: string[] = carsCascading[this.state.year][this.state.make];
+        models.map((model, i) => options.push(<option key={i + 1} value={model}>{model}</option>));
+        options.push(<option value="other">Other</option>);
+        if (options) return options;
+      } else {
+        let options: JSX.Element[] = [<option value="" disabled>Model</option>];
+        if (options) return options;
+      }
     }
   }
 
@@ -138,7 +159,10 @@ class Form extends Component<{}, State> {
           <div className="container">
               <p>Hello</p>
 
-              {inputsHTML}
+              <form onSubmit={(e) => this.props.onSubmitForm(e, this.state)}>
+                {inputsHTML}
+                <button type="submit">Submit</button>
+              </form>
           </div>
       );
   }
