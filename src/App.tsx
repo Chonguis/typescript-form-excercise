@@ -1,21 +1,30 @@
 import React, { FormEvent } from 'react';
 import './App.css';
 import Form from './components/Form/FormContainer';
+import SubmittedFormPanel from './components/SubmittedFormPanel/SubmittedFormPanel';
 
-class App extends React.Component {
+interface State {
+  submitted: boolean;
+  formState: {};
+}
+
+class App extends React.Component<{}, State> {
   constructor(props: any){
     super(props);
 
     this.state = {
       submitted: false,
+      formState: {},
     }
   }
 
   onSubmitForm = (e: FormEvent<HTMLFormElement>, formState: {}) => {
     e.preventDefault();
-
+    this.setState({
+      submitted: true,
+      formState: formState,
+    });
     console.log(formState, 'formState');
-
   } 
   render(){
     return (
@@ -25,7 +34,7 @@ class App extends React.Component {
         </header>
   
         <Form onSubmitForm={this.onSubmitForm} />
-  
+        <SubmittedFormPanel formState={this.state.formState} />
       </div>
     );
   }

@@ -78,11 +78,18 @@ class Form extends Component<Props, State> {
 
   onChangeSelect = (event: ChangeEvent<HTMLSelectElement>, id: string):void => {
     if (event.target.value) {
-      if (id == "year") {
+      if (id === "year") {
         this.setState({
           ...this.state,
           [id]: event.target.value,
           make: "",
+          model: "",
+        });
+      } else if (id === "make") {
+        this.setState({
+          ...this.state,
+          [id]: event.target.value,
+          model: "",
         });
       } else {
         this.setState({
